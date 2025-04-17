@@ -2,17 +2,24 @@ from tkinter import *
 from tkinter import messagebox as msg
 from base_gui import BaseGUI
 from book import Book
+from tkinter import filedialog
 
 class BookManager(BaseGUI):
     def __init__(self, dimensions="500x240", title="Book Manager"):
         super().__init__(dimensions, title)
         self.books = []
-        self.load_books()
+        #self.load_books()
 
     def load_books(self):
-        self.books.append(Book("Python Programming", "John Doe", 29.99))
-        self.books.append(Book("Data Structures", "Jane Smith", 39.99))
-        self.books.append(Book("Algorithms", "Alice Johnson", 49.99))
+        file_name = filedialog.askopenfilename(title="Select a file", filetypes=(("CSV files", "*.csv"), ("All files", "*.*")))
+
+        with open(file_name, 'r') as file:
+            # skip the header line
+            next(file)
+            for line in file:
+                title, author, price = line.strip().split(',')
+                book = Book(title, author, float(price))
+                self.books.append(book)
 
         self.lst_books.delete(0, END)  # clear the listbox
         for book in self.books:
@@ -48,14 +55,33 @@ class BookManager(BaseGUI):
         self.btn_delete.grid(row=3, column=3, sticky=W)
 
         self.lst_books = Listbox(self.window, width=25, selectmode=SINGLE, exportselection=FALSE)
-        self.lst_books.grid(row=0, column=4, rowspan=4, sticky=W)
+        self.lst_books.grid(row=0, column=4, rowspan=4, columnspan=2, sticky=W)
         self.lst_books.bind('<<ListboxSelect>>', self.book_selected)
 
+        self.btn_load = Button(self.window, text='Load Books', command=self.load_books)
+        self.btn_load.grid(row=4, column=4, sticky=W)
+
+        self.btn_save = Button(self.window, text='Save Books', command=self.save_books)
+        self.btn_save.grid(row=4, column=5, sticky=E)
+
+    def save_books(self):
+        file_name = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=(("CSV files", "*.csv"), ("All files", "*.*")))
+        with open(file_name, 'w') as file:
+            file.write("Title,Author,Price\n") # write header
+            for b in self.books:
+                file.write(f"{b.title},{b.author},{b.price}\n")
+        msg.showinfo("Books Saved", "Books saved successfully.")
+
     def delete_book(self):
-        selected_index = self.lst_books.curselection()[0]
-        self.lst_books.delete(selected_index)
-        self.books.pop(selected_index)
-        msg.showinfo("Book Deleted", "Book deleted successfully.")
+        try:
+            selected_index = self.lst_books.curselection()[0]
+            msg.showerror("No Selection", "Please select a book to delete.")
+
+            self.lst_books.delete(selected_index)
+            self.books.pop(selected_index)
+            msg.showinfo("Book Deleted", "Book deleted successfully.")
+        except IndexError:
+            msg.showerror("No Selection", "Please select a book to delete.")
 
     def book_selected(self, event):
         # get current selection from the listbox
@@ -73,10 +99,19 @@ class BookManager(BaseGUI):
         # get the selected book from the list
         selected_index = self.lst_books.curselection()[0]
         book = self.books[selected_index]
+        
+        if self.txt_title.get() == "" or self.txt_author.get() == "" or self.txt_price.get() == "":
+            msg.showerror("Invalid Input", "Please fill in all fields.")
+            return
+        
         # update the book's details
         book.title = self.txt_title.get()
         book.author = self.txt_author.get()
-        book.price = float(self.txt_price.get())
+        try:
+            book.price = float(self.txt_price.get())
+        except ValueError:
+            msg.showerror("Invalid Input", "Please enter a valid price.")
+            return
         # update the listbox
         self.lst_books.delete(selected_index)
         self.lst_books.insert(selected_index, book.title)
