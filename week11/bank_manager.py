@@ -4,7 +4,7 @@ from debit_account import DebitAccount
 class BankManager:
     def __init__(self, name):
         self._name = name
-        self._accounts = self._load_accounts()
+        self._accounts = []
 
     @property
     def name(self):
@@ -31,14 +31,14 @@ class BankManager:
         print(f"Added new {account_type} account successfully.")
         print(account)
 
-    def __find_by_id(self, acc_id):
+    def find_by_id(self, acc_id):
         for account in self._accounts:
             if account.id == acc_id:
                 return account
         return None
     
     def remove_account(self, acc_id):
-        acc = self.__find_by_id(acc_id)
+        acc = self.find_by_id(acc_id)
         if acc == None:
             print(f"Account with ID {acc_id} not found.")
             return
@@ -46,21 +46,21 @@ class BankManager:
         print(f"Account with ID {acc_id} removed successfully.")
     
     def view_account(self, acc_id):
-        acc = self.__find_by_id(acc_id)
+        acc = self.find_by_id(acc_id)
         if acc == None:
             print(f"Account with ID {acc_id} not found.")
             return
         print(acc)
     
     def deposit(self, acc_id, amount):
-        acc = self.__find_by_id(acc_id)
+        acc = self.find_by_id(acc_id)
         if acc == None:
             print(f"Account with ID {acc_id} not found.")
             return
         acc.deposit(amount)
 
     def withdraw(self, acc_id, amount):
-        acc = self.__find_by_id(acc_id)
+        acc = self.find_by_id(acc_id)
         if acc == None:
             print(f"Account with ID {acc_id} not found.")
             return

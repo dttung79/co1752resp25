@@ -1,0 +1,5 @@
+ID,Type,Balance,Limit
+0,normal,1000,0
+1,normal,2000,0
+2,debit,500,1000
+3,debit,1000,2000
